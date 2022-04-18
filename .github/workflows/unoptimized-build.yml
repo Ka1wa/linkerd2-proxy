@@ -1,0 +1,33 @@
+name: Build unoptimized
+
+on:
+  pull_request: {}
+
+jobs:
+  build:
+    name: Build unoptimized
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f
+
+      - name: build
+        env:
+          DOCKER_UNOPTIMIZED: "true"
+          DOCKER_TAG: "kaiwa/linkerd2-proxy:v2.161.1-unoptimized"
+          ARCH: amd64
+        uses: ./.github/actions/package
+        with:
+          entrypoint: make
+          args: docker
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push to DockerHub
+        run: |
+          docker push kaiwa/linkerd2-proxy:v2.161.1-unoptimized
+
